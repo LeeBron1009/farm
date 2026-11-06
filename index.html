@@ -3,140 +3,343 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>我的開心農場</title>
+<title>我的3D開心農場</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
-html,body{margin:0;height:100%;overflow:hidden;font-family:"PingFang TC","Microsoft JhengHei",sans-serif}
-body{background:linear-gradient(#8fd3ff,#d8f3ff 45%,#a8e07a 45%,#6fbf4a);display:flex;flex-direction:column;max-width:520px;margin:auto;position:relative}
-body.night{background:linear-gradient(#10204a,#2a3f7a 45%,#3f7a3a 45%,#2c5a2a)}
-body.night::after{content:"";position:fixed;inset:0;background:rgba(0,0,40,.18);pointer-events:none}
-.cloud{position:absolute;font-size:46px;opacity:.9;animation:fly 40s linear infinite;pointer-events:none}
-@keyframes fly{from{left:-80px}to{left:105%}}
-.sun{position:absolute;right:16px;top:70px;font-size:40px;pointer-events:none}
-
-#top{display:flex;align-items:center;gap:8px;padding:8px 10px;background:linear-gradient(#5fcf5f,#3da63d);color:#fff;font-weight:bold;box-shadow:0 3px 6px rgba(0,0,0,.3);z-index:5}
-#top .av{font-size:28px;background:#fff;border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center}
-#lvbox{flex:1}
+html,body{margin:0;height:100%;overflow:hidden;font-family:"PingFang TC","Microsoft JhengHei",sans-serif;background:#8fd3ff}
+#c{position:fixed;left:0;top:0;width:100%;touch-action:none;display:block}
+.ui{position:fixed;left:50%;transform:translateX(-50%);width:min(100%,520px);z-index:5}
+#top{top:0;display:flex;align-items:center;gap:8px;padding:8px 10px;background:linear-gradient(#5fcf5f,#3da63d);color:#fff;font-weight:bold;border-radius:0 0 16px 16px;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+#top .av{font-size:26px;background:#fff;border-radius:50%;width:40px;height:40px;flex:0 0 40px;display:flex;align-items:center;justify-content:center}
+#lvbox{flex:1;font-size:14px;min-width:0}
 #bar{height:10px;background:rgba(0,0,0,.3);border-radius:6px;overflow:hidden;margin-top:3px}
-#barin{height:100%;background:#ffd54f;width:0}
-.coin{background:rgba(0,0,0,.28);padding:4px 10px;border-radius:14px}
-
-#toast{position:absolute;top:62px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;padding:6px 14px;border-radius:16px;font-size:14px;z-index:20;opacity:0;transition:.3s;white-space:nowrap;pointer-events:none}
+#barin{height:100%;background:#ffd54f;width:0;transition:.3s}
+.coin{background:rgba(0,0,0,.3);padding:4px 10px;border-radius:14px;white-space:nowrap}
+#nb{background:rgba(255,255,255,.25);padding:4px 8px;border-radius:12px}
+#toast{position:fixed;top:128px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.75);color:#fff;padding:6px 14px;border-radius:16px;font-size:14px;z-index:20;opacity:0;transition:.3s;white-space:nowrap;pointer-events:none}
 #toast.show{opacity:1}
-
-#seeds{display:flex;gap:6px;padding:8px;overflow-x:auto;z-index:4}
-.chip{flex:0 0 auto;background:rgba(255,255,255,.85);border-radius:12px;padding:4px 8px;text-align:center;font-size:12px;border:3px solid transparent;min-width:56px}
-.chip b{font-size:24px;display:block}
+#seeds{top:62px;display:flex;gap:6px;padding:6px 8px;overflow-x:auto}
+.chip{flex:0 0 auto;background:rgba(255,255,255,.88);border-radius:12px;padding:3px 8px;text-align:center;font-size:11px;border:3px solid transparent;min-width:54px}
+.chip b{font-size:22px;display:block}
 .chip.sel{border-color:#ff9800;background:#fff}
-.chip.lock{opacity:.45}
-
-#stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;min-height:0}
-#world{position:relative;width:300px;height:300px;transform:rotateX(58deg) rotateZ(45deg);transform-style:preserve-3d;margin-top:10px}
-#island{position:absolute;inset:0;background:#86d65a;border-radius:20px;
- box-shadow:1px 1px #5aa338,2px 2px #5aa338,3px 3px #5aa338,4px 4px #5aa338,5px 5px #4f8f2f,6px 6px #4f8f2f,7px 7px #7a5230,8px 8px #7a5230,9px 9px #7a5230,10px 10px #6a4426,11px 11px #6a4426,12px 12px #6a4426,22px 26px 22px rgba(0,0,0,.3)}
-#field{position:absolute;left:16px;top:16px;display:grid;grid-template-columns:repeat(4,64px);gap:4px;transform:translateZ(2px);transform-style:preserve-3d}
-.tile{width:64px;height:64px;border-radius:8px;position:relative;transform-style:preserve-3d;
- background:linear-gradient(135deg,#a9692f,#8a5424);
- box-shadow:1px 1px #5d3716,2px 2px #5d3716,3px 3px #5d3716,4px 4px #4a2b10,5px 5px #4a2b10}
-.tile.wet{background:linear-gradient(135deg,#7a4a22,#5e3818)}
-.tile.lockd{background:#9bd873;box-shadow:1px 1px #6fb04c,2px 2px #6fb04c,3px 3px #6fb04c}
-.tile.ripe{outline:3px solid gold;outline-offset:-3px}
-.up{position:absolute;left:50%;top:50%;width:0;height:0;transform:rotateZ(-45deg) rotateX(-58deg)}
-.up span{position:absolute;display:block;transform:translate(-50%,-85%);font-size:36px;white-space:nowrap;text-align:center;line-height:1;filter:drop-shadow(0 3px 2px rgba(0,0,0,.35))}
-.up span.ripeA{animation:bob .9s ease-in-out infinite}
-@keyframes bob{50%{transform:translate(-50%,-100%) scale(1.1)}}
-.up small{position:absolute;transform:translate(-50%,20px);font-size:11px;background:rgba(0,0,0,.65);color:#fff;border-radius:8px;padding:1px 6px;white-space:nowrap}
-.up i{position:absolute;font-style:normal;font-size:20px;transform:translate(8px,-62px)}
-.up .bug{transform:translate(-30px,-58px)}
-
-#pen{display:flex;gap:6px;padding:6px 10px;margin-bottom:4px;min-height:64px;align-items:flex-end;flex-wrap:wrap;justify-content:center;background:rgba(139,94,52,.55);border-radius:14px;border:3px solid #7a5230;width:92%}
-.an{text-align:center;font-size:34px;position:relative;width:56px}
-.an small{display:block;font-size:11px;background:rgba(0,0,0,.6);color:#fff;border-radius:8px}
-.an.ready{animation:bob2 .8s infinite}
-@keyframes bob2{50%{transform:translateY(-6px)}}
-.deco{position:absolute;font-size:44px;pointer-events:none}
-
-#tools{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px;background:linear-gradient(#c68a4a,#8a5a2b);box-shadow:0 -3px 6px rgba(0,0,0,.3);z-index:5}
-.tb{background:#fff3d6;border:3px solid #e0b36a;border-radius:12px;padding:4px 0;text-align:center;font-size:12px;color:#5a3a1c;font-weight:bold}
-.tb b{display:block;font-size:24px}
+.chip.lock{opacity:.5}
+#tools{bottom:0;display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:7px;background:linear-gradient(#c68a4a,#8a5a2b);border-radius:16px 16px 0 0;box-shadow:0 -3px 8px rgba(0,0,0,.35)}
+.tb{background:#fff3d6;border:3px solid #e0b36a;border-radius:12px;padding:3px 0;text-align:center;font-size:11px;color:#5a3a1c;font-weight:bold}
+.tb b{display:block;font-size:22px}
 .tb.on{background:#ffd54f;border-color:#ff9800;transform:translateY(-3px)}
-
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:30}
 #modal.open{display:flex}
-.sheet{background:#fff8e6;width:100%;max-width:520px;max-height:75vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:14px;animation:up .25s}
-@keyframes up{from{transform:translateY(100%)}}
+.sheet{background:#fff8e6;width:100%;max-width:520px;max-height:75vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:14px}
 .sheet h3{margin:0 0 10px;display:flex;justify-content:space-between;align-items:center}
 .row{display:flex;align-items:center;gap:8px;background:#fff;border-radius:12px;padding:8px;margin-bottom:6px;box-shadow:0 1px 3px rgba(0,0,0,.15)}
-.row .ic{font-size:32px}.row .tx{flex:1;font-size:13px}
+.row .ic{font-size:30px}.row .tx{flex:1;font-size:13px}
 button{font-size:14px;padding:6px 10px;border:0;border-radius:8px;background:#ff9800;color:#fff;font-weight:bold}
 button.g{background:#43a047}button.r{background:#e53935}button:disabled{background:#bbb}
 .pop{position:fixed;font-weight:bold;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;font-size:18px;pointer-events:none;animation:pp 1s forwards;z-index:40}
 @keyframes pp{to{transform:translateY(-60px);opacity:0}}
+.hint{position:fixed;left:50%;transform:translateX(-50%);bottom:150px;color:#fff;font-size:12px;text-shadow:0 0 4px #000;pointer-events:none;z-index:4;opacity:.8}
 </style>
 </head>
 <body>
-<div class="sun" id="sun">☀️</div>
-<div class="cloud" style="top:90px">☁️</div>
-<div class="cloud" style="top:150px;animation-duration:60s;animation-delay:-20s;font-size:34px">☁️</div>
-
-<div id="top">
+<canvas id="c"></canvas>
+<div id="top" class="ui">
   <div class="av">🧑‍🌾</div>
   <div id="lvbox">等級 <span id="lv">1</span><div id="bar"><div id="barin"></div></div></div>
   <div class="coin">💰 <span id="coin">0</span></div>
+  <div id="nb" onpointerdown="toggleNight()">☀️</div>
 </div>
 <div id="toast"></div>
-<div id="seeds"></div>
-
-<div id="stage">
-  <span class="deco" style="left:4px;top:30px">🌳</span>
-  <span class="deco" style="right:6px;top:70px">🏡</span>
-  <span class="deco" style="left:0;bottom:90px;font-size:34px">🌻</span>
-  <div id="world"><div id="island"></div><div id="field"></div></div>
-  <div id="pen"></div>
-</div>
-
-<div id="tools"></div>
+<div id="seeds" class="ui"></div>
+<div class="hint">拖曳旋轉 · 雙指縮放 · 點土地操作</div>
+<div id="tools" class="ui"></div>
 <div id="modal" onpointerdown="if(event.target===this)closeM()"><div class="sheet" id="sheet"></div></div>
 
-<script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three';
+
+/* ================= 遊戲資料 ================= */
 const CROPS=[
  {name:"蘿蔔",icon:"🥕",cost:5,sell:12,time:15,xp:2,lv:1},
  {name:"番茄",icon:"🍅",cost:15,sell:36,time:40,xp:5,lv:2},
  {name:"玉米",icon:"🌽",cost:30,sell:80,time:90,xp:10,lv:3},
  {name:"草莓",icon:"🍓",cost:50,sell:140,time:150,xp:15,lv:4},
  {name:"西瓜",icon:"🍉",cost:80,sell:230,time:240,xp:25,lv:5},
- {name:"南瓜",icon:"🎃",cost:150,sell:450,time:400,xp:40,lv:7}
+ {name:"南瓜",icon:"🎃",cost:150,sell:450,time:400,xp:40,lv:7},
+ {name:"向日葵",icon:"🌻",cost:250,sell:700,time:600,xp:60,lv:9}
 ];
 const ANI=[
  {name:"小雞",icon:"🐔",prod:"🥚",pname:"雞蛋",cost:100,feed:10,time:40,sell:25,lv:1},
  {name:"乳牛",icon:"🐄",prod:"🥛",pname:"牛奶",cost:500,feed:30,time:90,sell:70,lv:3},
  {name:"綿羊",icon:"🐑",prod:"🧶",pname:"羊毛",cost:1200,feed:60,time:150,sell:150,lv:5}
 ];
-function item(id){const n=+id.slice(1);if(id[0]=="c"){const c=CROPS[n];return{name:c.name,icon:c.icon,sell:c.sell}}const a=ANI[n];return{name:a.pname,icon:a.prod,sell:a.sell}}
+const REC=[
+ {name:"蔬菜湯",icon:"🍲",need:{c0:2,c1:1},sell:100,time:30,lv:2},
+ {name:"玉米濃湯",icon:"🥣",need:{c2:3},sell:340,time:60,lv:3},
+ {name:"草莓奶茶",icon:"🧋",need:{c3:2,a1:1},sell:480,time:90,lv:5},
+ {name:"南瓜派",icon:"🥧",need:{c5:2,a0:1},sell:1400,time:150,lv:7}
+];
+const ACH=[
+ {id:"h1",name:"初出茅廬",desc:"收成 20 次",v:s=>s.harvest,goal:20,coin:100},
+ {id:"h2",name:"農場老手",desc:"收成 100 次",v:s=>s.harvest,goal:100,coin:500},
+ {id:"h3",name:"豐收大王",desc:"收成 500 次",v:s=>s.harvest,goal:500,coin:3000},
+ {id:"o1",name:"送貨達人",desc:"完成 10 張訂單",v:s=>s.orders,goal:10,coin:400},
+ {id:"c1",name:"小廚師",desc:"製作 5 個加工品",v:s=>s.crafted,goal:5,coin:400},
+ {id:"a1",name:"牧場主人",desc:"收取動物產品 20 次",v:s=>s.collect,goal:20,coin:300},
+ {id:"l1",name:"農場達人",desc:"等級達到 5",v:()=>level(),goal:5,coin:600},
+ {id:"f1",name:"大地主",desc:"開墾全部 16 塊土地",v:()=>S.plots.filter(p=>p.open).length,goal:16,coin:1500}
+];
+function item(id){
+  const n=+id.slice(1);
+  if(id[0]=="c"){const c=CROPS[n];return{name:c.name,icon:c.icon,sell:c.sell}}
+  if(id[0]=="a"){const a=ANI[n];return{name:a.pname,icon:a.prod,sell:a.sell}}
+  const r=REC[n];return{name:r.name,icon:r.icon,sell:r.sell};
+}
 
+/* ================= 存檔 ================= */
 const KEY="happyFarm3D";
 const def=()=>({coin:50,xp:0,sel:0,tool:"hand",fert:2,seeds:{},inv:{},animals:[],orders:[],daily:"",
- plots:Array.from({length:16},(_,i)=>({open:[5,6,7,9,10,11].includes(i)}))});
+ mill:{r:-1,t:0},scare:false,night:null,ach:{},stats:{harvest:0,crafted:0,orders:0,collect:0},
+ plots:Array.from({length:16},(_,i)=>({open:[5,6,9,10,7,11].includes(i)}))});
 let S=Object.assign(def(),JSON.parse(localStorage.getItem(KEY)||"{}"));
+S.stats=Object.assign(def().stats,S.stats);
 const $=id=>document.getElementById(id);
 const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const level=()=>{let l=1;while(S.xp>=l*l*20)l++;return l};
-let modal=null,tt;
-function msg(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>e.classList.remove("show"),1600)}
-function pop(t,e){const d=document.createElement("div");d.className="pop";d.textContent=t;d.style.left=((e&&e.clientX)||200)-20+"px";d.style.top=((e&&e.clientY)||300)-20+"px";document.body.appendChild(d);setTimeout(()=>d.remove(),1000)}
-function addXp(n){const b=level();S.xp+=n;if(level()>b)msg("🎉 升級了!等級 "+level())}
+let modal=null,tt,raining=0;
+function msg(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>e.classList.remove("show"),1700)}
+function pop(t,e){const d=document.createElement("div");d.className="pop";d.textContent=t;d.style.left=((e&&e.clientX)||200)-30+"px";d.style.top=((e&&e.clientY)||300)-30+"px";document.body.appendChild(d);setTimeout(()=>d.remove(),1000)}
+function addXp(n){const b=level();S.xp+=n;if(level()>b){msg("🎉 升級了!等級 "+level());beep(900,.25)}}
+let AC;function beep(f=600,d=.08){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type="triangle";o.frequency.value=f;g.gain.value=.06;o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d)}catch(e){}}
 
-/* 作物進度 */
-function prog(p){const c=CROPS[p.c],full=c.time*1000,half=full*0.4;let el=Date.now()-p.t;if(!p.wet&&el>half)el=half;return Math.min(1,el/full)}
-function needWater(p){const c=CROPS[p.c];return !p.wet&&Date.now()-p.t>=c.time*400}
+/* ================= 3D 場景基礎 ================= */
+const canvas=$("c");
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(40,1,.1,400);
+const hemi=new THREE.HemisphereLight(0xffffff,0x88aa66,.95);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xfff2d0,1.15);
+sun.position.set(9,18,9);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-15,right:15,top:15,bottom:-15,near:1,far:70});
+sun.shadow.bias=-0.0005;scene.add(sun);
 
-/* 點土地 */
+const mats={};
+const M=c=>mats[c]||(mats[c]=new THREE.MeshStandardMaterial({color:c,roughness:.8,flatShading:true}));
+function mk(g,c,x=0,y=0,z=0,p){const m=new THREE.Mesh(g,M(c));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;if(p)p.add(m);return m}
+const box=(w,h,d)=>new THREE.BoxGeometry(w,h,d);
+const cyl=(a,b,h,s=8)=>new THREE.CylinderGeometry(a,b,h,s);
+const sph=(r,w=9,h=7)=>new THREE.SphereGeometry(r,w,h);
+const cone=(r,h,s=6)=>new THREE.ConeGeometry(r,h,s);
+const tor=(r,t,a=5,b=20)=>new THREE.TorusGeometry(r,t,a,b);
+
+/* 島嶼 */
+const world=new THREE.Group();scene.add(world);
+mk(box(13.4,.35,17.4),"#7ccf50",0,-.17,0,world);
+mk(box(13,1.4,17),"#8d6238",0,-1.05,0,world);
+const under=mk(cone(7.2,6,7),"#6d4a2a",0,-4.8,0,world);under.rotation.x=Math.PI;
+mk(cone(3,4,6),"#5c3d22",1,-7.5,1,world).rotation.x=Math.PI;
+
+/* 裝飾 */
+function tree(x,z,s=1,round=false){
+  const g=new THREE.Group();g.position.set(x,0,z);g.scale.setScalar(s);
+  mk(cyl(.2,.28,1.2),"#7b5230",0,.6,0,g);
+  if(round){mk(sph(.9,9,7),"#4caf50",0,1.8,0,g);mk(sph(.65,9,7),"#66bb6a",.4,2.4,.2,g)}
+  else{mk(cone(1,1.4,7),"#2e9e4a",0,1.7,0,g);mk(cone(.8,1.2,7),"#3cb55a",0,2.5,0,g);mk(cone(.55,1,7),"#4cc66a",0,3.2,0,g)}
+  world.add(g);
+}
+tree(-5.8,-3,1);tree(5.8,-2,1.1,true);tree(-5.9,1.5,.9,true);tree(5.7,-5.5,1);tree(-5.6,-6.2,1.1);tree(5.9,2.2,.9);
+
+const house=new THREE.Group();house.position.set(3.6,0,-7.2);world.add(house);
+mk(box(2.6,1.7,2.1),"#f5e6c8",0,.85,0,house);
+const roof=mk(cone(2.1,1.3,4),"#d9534f",0,2.3,0,house);roof.rotation.y=Math.PI/4;
+mk(box(.55,1,.1),"#7b5230",0,.5,1.06,house);
+mk(box(.5,.5,.1),"#81d4fa",-.85,1,1.06,house);mk(box(.5,.5,.1),"#81d4fa",.85,1,1.06,house);
+mk(box(.35,.8,.35),"#a1887f",.8,2.6,-.3,house);
+
+const windmill=new THREE.Group();windmill.position.set(-1,0,-7.4);world.add(windmill);
+mk(cyl(.55,.9,2.8,8),"#f3e9d2",0,1.4,0,windmill);
+mk(cone(.7,.9,8),"#c0392b",0,3.2,0,windmill);
+const blades=new THREE.Group();blades.position.set(0,2.7,.8);windmill.add(blades);
+for(let k=0;k<4;k++){const b=mk(box(.28,1.7,.06),"#fff",0,.9,0,new THREE.Group());b.parent.rotation.z=k*Math.PI/2;blades.add(b.parent)}
+mk(sph(.14),"#795548",0,2.7,.8,windmill);
+
+const mill=new THREE.Group();mill.position.set(-4.5,0,-6.9);mill.userData={kind:"mill"};world.add(mill);
+mk(box(2.4,1.5,2),"#c98a4b",0,.75,0,mill);
+mk(box(2.7,.25,2.3),"#5d4037",0,1.62,0,mill);
+mk(box(.5,1,.5),"#8d6e63",.7,2.2,-.4,mill);
+mk(box(.9,.7,.1),"#ffe082",0,.9,1.02,mill);
+const millLab=label();millLab.sprite.position.set(0,3.4,0);mill.add(millLab.sprite);
+
+const scare=new THREE.Group();scare.position.set(5.2,0,3.4);world.add(scare);
+mk(cyl(.06,.06,2),"#7b5230",0,1,0,scare);
+mk(box(1.4,.08,.08),"#7b5230",0,1.5,0,scare);
+mk(sph(.28),"#ffe0b2",0,2.15,0,scare);
+mk(cone(.4,.35,8),"#795548",0,2.5,0,scare);
+mk(box(.9,.8,.05),"#e53935",0,1.2,0,scare);
+
+/* 牧場 */
+mk(box(10.8,.06,3.4),"#e8cf8a",0,.03,6.2,world).castShadow=false;
+for(let k=0;k<=8;k++){const x=-5.2+k*1.3;mk(box(.14,.8,.14),"#a1744a",x,.4,7.9,world)}
+mk(box(10.6,.09,.07),"#c8955a",0,.65,7.9,world);mk(box(10.6,.09,.07),"#c8955a",0,.35,7.9,world);
+[-5.2,5.2].forEach(x=>{for(let k=0;k<3;k++)mk(box(.14,.8,.14),"#a1744a",x,.4,4.8+k*1.45,world);
+  mk(box(.07,.09,3.1),"#c8955a",x,.65,6.3,world)});
+
+/* 花 */
+const fc=["#ff6f91","#ffd54f","#ffffff","#ba68c8","#ff8a65"];
+for(let k=0;k<34;k++){
+  const x=(Math.random()<.5?-1:1)*(5.9+Math.random()*.4),z=-8+Math.random()*12;
+  mk(cyl(.02,.02,.3,4),"#3f8f3f",x,.15,z,world);mk(sph(.1,6,5),fc[k%5],x,.34,z,world);
+}
+
+/* 雲 */
+const clouds=[];
+for(let k=0;k<9;k++){
+  const g=new THREE.Group();
+  for(let j=0;j<4;j++){const s=mk(sph(1+Math.random()*.8,8,6),"#ffffff",j*1.2-1.8,Math.random()*.4,Math.random()*.6,g);s.castShadow=false;s.receiveShadow=false}
+  g.position.set(-60+Math.random()*120,-8+Math.random()*22,-40-Math.random()*40+(k%2?60:0));
+  g.userData.sp=.4+Math.random()*.6;scene.add(g);clouds.push(g);
+}
+/* 星星、雨 */
+const sp=new Float32Array(900);
+for(let k=0;k<300;k++){const a=Math.random()*6.28,b=Math.random()*1.3+.1,r=140;sp[k*3]=Math.cos(a)*Math.cos(b)*r;sp[k*3+1]=Math.sin(b)*r;sp[k*3+2]=Math.sin(a)*Math.cos(b)*r}
+const starG=new THREE.BufferGeometry();starG.setAttribute("position",new THREE.BufferAttribute(sp,3));
+const stars=new THREE.Points(starG,new THREE.PointsMaterial({color:0xffffff,size:2,sizeAttenuation:false}));scene.add(stars);
+const rp=new Float32Array(1500);
+for(let k=0;k<500;k++){rp[k*3]=(Math.random()-.5)*20;rp[k*3+1]=Math.random()*14;rp[k*3+2]=(Math.random()-.5)*20}
+const rainG=new THREE.BufferGeometry();rainG.setAttribute("position",new THREE.BufferAttribute(rp,3));
+const rain=new THREE.Points(rainG,new THREE.PointsMaterial({color:0xa5d8ff,size:2,sizeAttenuation:false}));rain.visible=false;scene.add(rain);
+
+/* 白天/夜晚 */
+function isNight(){if(S.night!=null)return S.night;const h=new Date().getHours();return h>=18||h<6}
+function applyTime(){
+  const n=isNight(),bg=n?0x0b1535:0x8fd3ff;
+  scene.background=new THREE.Color(bg);scene.fog=new THREE.Fog(bg,80,200);
+  hemi.color.set(n?0x7788bb:0xffffff);hemi.groundColor.set(n?0x223322:0x88aa66);hemi.intensity=n?.6:.95;
+  sun.color.set(n?0x9fb4ff:0xfff2d0);sun.intensity=n?.7:1.15;
+  stars.visible=n;$("nb").textContent=n?"🌙":"☀️";document.body.style.background=n?"#0b1535":"#8fd3ff";
+}
+window.toggleNight=()=>{S.night=!isNight();save();applyTime()};
+
+/* ================= 標籤 ================= */
+function label(){
+  const cv=document.createElement("canvas");cv.width=256;cv.height=96;const x=cv.getContext("2d");
+  const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true}));
+  s.scale.set(2.3,.86,1);s.renderOrder=10;s.raycast=()=>{};s.visible=false;
+  let last=null;
+  return{sprite:s,set(t){
+    if(t===last)return;last=t;s.visible=!!t;if(!t)return;
+    x.clearRect(0,0,256,96);x.fillStyle="rgba(0,0,0,.68)";
+    x.beginPath();const r=30,X=8,Y=12,W=240,H=72;
+    x.moveTo(X+r,Y);x.arcTo(X+W,Y,X+W,Y+H,r);x.arcTo(X+W,Y+H,X,Y+H,r);x.arcTo(X,Y+H,X,Y,r);x.arcTo(X,Y,X+W,Y,r);x.closePath();x.fill();
+    x.fillStyle="#fff";x.font="bold 36px sans-serif";x.textAlign="center";x.textBaseline="middle";x.fillText(t,128,50);
+    tex.needsUpdate=true;
+  }};
+}
+
+/* ================= 作物模型 ================= */
+const CB=[
+ g=>{const o=mk(cone(.28,.85,8),"#ff8f1f",0,.2,0,g);o.rotation.x=Math.PI;
+  for(let k=0;k<5;k++){const a=k/5*6.28,l=mk(cone(.12,.8,5),"#43a047",Math.cos(a)*.15,.85,Math.sin(a)*.15,g);l.rotation.z=-Math.cos(a)*.5;l.rotation.x=Math.sin(a)*.5}},
+ g=>{mk(cyl(.05,.07,1.1),"#6a9a3a",0,.55,0,g);
+  for(let k=0;k<4;k++){const a=k*1.6,l=mk(sph(.3,7,6),"#3f9a3c",Math.cos(a)*.35,.55+k*.15,Math.sin(a)*.35,g);l.scale.set(1,.4,1)}
+  [[.3,.45,.1],[-.25,.7,.2],[.05,.95,-.3],[.1,.3,.35]].forEach(p=>mk(sph(.22,9,8),"#e53935",p[0],p[1],p[2],g))},
+ g=>{mk(cyl(.08,.1,1.9),"#7cb342",0,.95,0,g);
+  for(let k=0;k<5;k++){const a=k*1.3,l=mk(box(.9,.04,.22),"#558b2f",Math.cos(a)*.4,.5+k*.3,Math.sin(a)*.4,g);l.rotation.y=-a;l.rotation.z=.4}
+  mk(cyl(.14,.16,.65),"#ffd54f",.2,1.2,0,g);mk(cone(.18,.4,6),"#8bc34a",.2,1.65,0,g)},
+ g=>{for(let k=0;k<5;k++){const a=k*1.25,l=mk(sph(.3,7,6),"#43a047",Math.cos(a)*.3,.3+k*.04,Math.sin(a)*.3,g);l.scale.set(1,.4,1)}
+  [[.35,.25,.2],[-.3,.22,.25],[0,.2,-.35],[.1,.5,0],[-.2,.3,-.2]].forEach(p=>{const b=mk(cone(.14,.3,7),"#e53946",p[0],p[1],p[2],g);b.rotation.x=Math.PI})},
+ g=>{const w=new THREE.Group();w.position.y=.5;w.scale.set(1.15,.9,1);g.add(w);
+  mk(sph(.6,12,10),"#43a047",0,0,0,w);for(let k=0;k<4;k++){const t=mk(tor(.6,.035,5,20),"#1b6b2a",0,0,0,w);t.rotation.y=k*Math.PI/4}
+  mk(cyl(.05,.06,.2),"#5d4037",0,.58,0,w)},
+ g=>{const p=new THREE.Group();p.position.y=.45;p.scale.set(1.15,.8,1.15);g.add(p);
+  mk(sph(.55,12,10),"#ff8a1f",0,0,0,p);for(let k=0;k<3;k++){const t=mk(tor(.55,.05,5,20),"#f06d00",0,0,0,p);t.rotation.y=k*Math.PI/3}
+  mk(cyl(.07,.09,.28),"#5d4037",0,.62,0,g)},
+ g=>{mk(cyl(.06,.08,1.7),"#5b8c2a",0,.85,0,g);
+  [-1,1].forEach(s=>{const l=mk(box(.5,.04,.22),"#4f9a30",s*.3,.6,0,g);l.rotation.z=s*-.4});
+  const h=new THREE.Group();h.position.set(0,1.75,.1);h.rotation.x=1.2;g.add(h);
+  mk(cyl(.55,.55,.1,16),"#ffca28",0,0,0,h);mk(cyl(.3,.3,.14,12),"#5d3a1a",0,0,0,h)}
+];
+const sprout=g=>{mk(cyl(.03,.04,.4),"#7cb342",0,.2,0,g);
+  const a=mk(sph(.16,7,6),"#66bb6a",.12,.4,0,g);a.scale.set(1,.35,.7);const b=mk(sph(.16,7,6),"#66bb6a",-.12,.34,0,g);b.scale.set(1,.35,.7)};
+function makeBug(){const g=new THREE.Group();
+  for(let k=0;k<4;k++)mk(sph(.13,7,6),k==3?"#c0ca33":"#76c13a",k*.19-.3,.15,0,g);
+  mk(sph(.03,4,3),"#000",.3,.2,.08,g);mk(sph(.03,4,3),"#000",.3,.2,-.08,g);g.position.set(.55,.12,.55);return g}
+
+/* ================= 動物模型 ================= */
+const AB=[
+ ()=>{const g=new THREE.Group();
+  const b=mk(sph(.42,10,8),"#fff",0,.6,0,g);b.scale.set(1,.9,1.15);
+  mk(sph(.22,9,7),"#fff",0,1.05,.38,g);const bk=mk(cone(.08,.22,5),"#ffa726",0,1.02,.62,g);bk.rotation.x=Math.PI/2;
+  mk(box(.08,.14,.2),"#e53935",0,1.3,.38,g);
+  mk(sph(.04,5,4),"#000",.11,1.1,.55,g);mk(sph(.04,5,4),"#000",-.11,1.1,.55,g);
+  const t=mk(cone(.18,.4,5),"#eee",0,.85,-.5,g);t.rotation.x=-.9;
+  mk(cyl(.03,.03,.3,5),"#ffa726",.15,.15,.05,g);mk(cyl(.03,.03,.3,5),"#ffa726",-.15,.15,.05,g);g.scale.setScalar(1.15);return g},
+ ()=>{const g=new THREE.Group();
+  mk(box(1,.8,1.7),"#fff",0,1,0,g);mk(box(1.02,.4,.5),"#2b2b2b",0,1.15,.15,g);mk(box(.4,.5,.6),"#2b2b2b",.5,.9,-.5,g);
+  mk(box(.6,.55,.6),"#fff",0,1.25,1.1,g);mk(box(.45,.25,.2),"#f8bbd0",0,1.1,1.45,g);
+  mk(cone(.07,.25,5),"#eee",.25,1.6,1.05,g);mk(cone(.07,.25,5),"#eee",-.25,1.6,1.05,g);
+  mk(sph(.05,5,4),"#000",.18,1.35,1.4,g);mk(sph(.05,5,4),"#000",-.18,1.35,1.4,g);
+  [[.35,.6],[-.35,.6],[.35,-.6],[-.35,-.6]].forEach(p=>mk(box(.2,.6,.2),"#fff",p[0],.3,p[1],g));
+  mk(cyl(.03,.03,.8,5),"#2b2b2b",0,1.1,-.9,g);g.scale.setScalar(.72);return g},
+ ()=>{const g=new THREE.Group();
+  const w=mk(sph(.6,10,8),"#f5f5f5",0,.85,0,g);w.scale.set(1,.85,1.2);
+  [[.4,1,.3],[-.4,1,.3],[0,1.2,-.3],[.3,.8,-.6],[-.3,.8,-.6]].forEach(p=>mk(sph(.32,8,6),"#fff",p[0],p[1],p[2],g));
+  const h=mk(sph(.27,8,7),"#3e3e3e",0,.95,.8,g);h.scale.set(1,1.1,1.2);
+  mk(sph(.04,5,4),"#fff",.1,1.02,1.03,g);mk(sph(.04,5,4),"#fff",-.1,1.02,1.03,g);
+  [[.3,.4],[-.3,.4],[.3,-.4],[-.3,-.4]].forEach(p=>mk(cyl(.07,.07,.5,6),"#3e3e3e",p[0],.25,p[1],g));g.scale.setScalar(.88);return g}
+];
+
+/* ================= 土地與動物的 3D 物件 ================= */
+const PITCH=2.2;
+const pickables=[];
+const PV=S.plots.map((p,i)=>{
+  const g=new THREE.Group();
+  g.position.set(((i%4)-1.5)*PITCH,0,(Math.floor(i/4)-1.5)*PITCH-1.5);
+  g.userData={kind:"plot",i};
+  const tile=mk(box(2,.3,2),"#a8692f",0,-.03,0,g);
+  const fur=new THREE.Group();g.add(fur);
+  [-.55,0,.55].forEach(z=>{const f=mk(box(1.7,.05,.14),"#8a5424",0,.13,z,fur);f.castShadow=false});
+  const crop=new THREE.Group();crop.position.y=.12;g.add(crop);
+  const lab=label();lab.sprite.position.set(0,2.4,0);g.add(lab.sprite);
+  world.add(g);pickables.push(g);
+  return{g,tile,fur,crop,lab,key:"",stage:-1,model:null,bug:null,ring:null};
+});
+const AV=[];
+function slotPos(i){return[(i-2.5)*1.75,0,6.2]}
+function syncAnimals(){
+  S.animals.forEach((a,i)=>{
+    if(AV[i])return;
+    const g=new THREE.Group();const [x,y,z]=slotPos(i);g.position.set(x,0,z);g.rotation.y=.3;
+    const m=AB[a.k]();g.add(m);g.userData={kind:"animal",i};
+    const lab=label();lab.sprite.position.set(0,2.5,0);g.add(lab.sprite);
+    world.add(g);pickables.push(g);AV[i]={g,m,lab};
+  });
+}
+pickables.push(mill);
+
+/* ================= 遊戲邏輯 ================= */
+function prog(p){const c=CROPS[p.c],full=c.time*1000,half=full*.4;let el=Date.now()-p.t;if(!p.wet&&el>half)el=half;return Math.min(1,el/full)}
+function needWater(p){return !p.wet&&Date.now()-p.t>=CROPS[p.c].time*400}
+function waterPlot(p){if(p.wet)return;const half=CROPS[p.c].time*400,stall=Math.max(0,Date.now()-(p.t+half));p.t+=stall;p.wet=true}
+const plotCost=()=>100*(S.plots.filter(x=>x.open).length-5);
+
+const parts=[],pg=new THREE.SphereGeometry(.09,6,5);
+function burst(pos,color,n=10,up=4){
+  for(let k=0;k<n;k++){const m=new THREE.Mesh(pg,M(color));m.position.copy(pos);m.position.y+=.5;scene.add(m);
+    parts.push({m,v:new THREE.Vector3((Math.random()-.5)*3,Math.random()*up,(Math.random()-.5)*3),life:.9})}
+}
+const wp=i=>PV[i].g.getWorldPosition(new THREE.Vector3());
+
 function tap(i,e){
   const p=S.plots[i];
   if(!p.open){
-    const cost=100*(S.plots.filter(x=>x.open).length-5);
+    const cost=plotCost();
     if(S.coin<cost)return msg("開墾需要 "+cost+"💰");
-    S.coin-=cost;p.open=true;msg("開墾成功!");
+    S.coin-=cost;p.open=true;msg("開墾成功!");beep(500);burst(wp(i),"#8d6238",14);
   }else if(S.tool=="hand"){
     if(p.c==null){
       const c=CROPS[S.sel];
@@ -144,8 +347,8 @@ function tap(i,e){
       if((S.seeds[S.sel]||0)>0)S.seeds[S.sel]--;
       else if(S.coin>=c.cost)S.coin-=c.cost;
       else return msg("金幣不足");
-      S.plots[i]={open:true,c:S.sel,t:Date.now(),wet:false,bug:Math.random()<0.3,fert:false};
-      pop("🌱",e);
+      S.plots[i]={open:true,c:S.sel,t:Date.now(),wet:false,bug:Math.random()<(S.scare?.1:.3),fert:false};
+      pop("🌱",e);beep(520);burst(wp(i),"#6d4c2a",8);
     }else{
       const c=CROPS[p.c];
       if(prog(p)<1){
@@ -153,122 +356,344 @@ function tap(i,e){
         return msg(c.name+"還要 "+Math.ceil((1-prog(p))*c.time)+" 秒");
       }
       if(p.bug)return msg("🐛 先除蟲才能收成");
-      S.inv["c"+p.c]=(S.inv["c"+p.c]||0)+1;addXp(c.xp);
-      S.plots[i]={open:true};pop("+1"+c.icon+" +"+c.xp+"XP",e);
+      S.inv["c"+p.c]=(S.inv["c"+p.c]||0)+1;S.stats.harvest++;addXp(c.xp);
+      S.plots[i]={open:true};pop("+1"+c.icon+" +"+c.xp+"XP",e);beep(780);burst(wp(i),"#ffd54f",14,5);
     }
   }else if(p.c!=null){
-    if(S.tool=="water"){if(p.wet)return msg("已經澆過水了");
-      const half=CROPS[p.c].time*400,stall=Math.max(0,Date.now()-(p.t+half));p.t+=stall;p.wet=true;pop("💧",e)}
-    else if(S.tool=="bug"){if(!p.bug)return msg("沒有蟲");p.bug=false;addXp(1);pop("✨除蟲 +1XP",e)}
+    if(S.tool=="water"){if(p.wet)return msg("已經澆過水了");waterPlot(p);pop("💧",e);beep(400);
+      const q=wp(i);q.y+=1.8;burst(q,"#4fc3f7",14,0)}
+    else if(S.tool=="bug"){if(!p.bug)return msg("沒有蟲");p.bug=false;addXp(1);pop("✨除蟲 +1XP",e);beep(700);burst(wp(i),"#76c13a",10)}
     else if(S.tool=="fert"){
       if(prog(p)>=1)return msg("已經成熟了");
       if(p.fert)return msg("已經施過肥");
       if(S.fert<1)return msg("沒有肥料,去商店買");
-      S.fert--;p.fert=true;p.t-=CROPS[p.c].time*300;pop("🧪 加速!",e)}
+      S.fert--;p.fert=true;p.t-=CROPS[p.c].time*300;pop("🧪 加速!",e);beep(650);burst(wp(i),"#b388ff",12,5)}
   }
   save();draw();
 }
-
-/* 動物 */
 function tapAn(i,e){
   const a=S.animals[i],d=ANI[a.k],now=Date.now();
   if(!a.t){
     if(S.coin<d.feed)return msg("飼料需要 "+d.feed+"💰");
-    S.coin-=d.feed;a.t=now;pop("🍽 餵食",e);
+    S.coin-=d.feed;a.t=now;pop("🍽 餵食",e);beep(450);
   }else if(now>=a.t+d.time*1000){
-    S.inv["a"+a.k]=(S.inv["a"+a.k]||0)+1;a.t=0;addXp(3);pop("+1"+d.prod,e);
+    S.inv["a"+a.k]=(S.inv["a"+a.k]||0)+1;S.stats.collect++;a.t=0;addXp(3);pop("+1"+d.prod,e);beep(800);
+    const q=AV[i].g.position.clone();burst(q,"#fff59d",10,5);
   }else msg(d.name+"還要 "+Math.ceil((a.t+d.time*1000-now)/1000)+" 秒");
   save();draw();
 }
+function millTap(e){
+  const m=S.mill;
+  if(m.r>=0){
+    const r=REC[m.r];
+    if(Date.now()>=m.t+r.time*1000){
+      S.inv["r"+m.r]=(S.inv["r"+m.r]||0)+1;S.stats.crafted++;addXp(10);S.mill={r:-1,t:0};
+      pop("+1"+r.icon,e);beep(850);burst(mill.position.clone(),"#ffcc80",14,5);save();draw();
+    }else msg("製作中,還要 "+Math.ceil((m.t+r.time*1000-Date.now())/1000)+" 秒");
+  }else openM("mill");
+}
+window.craft=r=>{
+  const d=REC[r];
+  if(S.mill.r>=0)return msg("工坊正在忙");
+  if(level()<d.lv)return msg("等級不夠");
+  for(const k in d.need)if((S.inv[k]||0)<d.need[k])return msg("材料不足");
+  for(const k in d.need)S.inv[k]-=d.need[k];
+  S.mill={r,t:Date.now()};msg("開始製作 "+d.name);beep(500);save();draw();
+};
 
-/* 畫面 */
+/* 同步 3D 畫面 */
+function syncPlot(i){
+  const p=S.plots[i],v=PV[i];let key,txt=null;
+  if(!p.open){key="L";txt="🔒 "+plotCost()+"💰"}
+  else if(p.c==null)key="E";
+  else{const pr=prog(p),st=pr>=1?2:pr<.3?0:1;key=`C${p.c}_${st}_${p.bug?1:0}`;v.stage=st;
+    txt=st==2?(p.bug?"🐛 需除蟲":"✨ 可收成"):needWater(p)?"💧 缺水":Math.ceil((1-pr)*CROPS[p.c].time)+"秒"}
+  v.tile.material=!p.open?M("#8fdc63"):(p.c!=null&&p.wet)?M("#6e4120"):M("#a8692f");
+  v.tile.scale.y=p.open?1:.35;v.fur.visible=p.open;
+  if(key!==v.key){
+    v.key=key;while(v.crop.children.length)v.crop.remove(v.crop.children[0]);
+    v.model=null;v.bug=null;v.ring=null;
+    if(p.open&&p.c!=null){
+      const m=new THREE.Group();v.crop.add(m);v.model=m;
+      if(v.stage==0)sprout(m);else CB[p.c](m);
+      if(v.stage==2){const r=mk(tor(.85,.05,6,28),"#ffd54f",0,.05,0,v.crop);r.rotation.x=Math.PI/2;r.castShadow=false;v.ring=r}
+      if(p.bug){v.bug=makeBug();v.crop.add(v.bug)}
+    }
+  }
+  v.lab.set(txt);
+}
+function syncAll(){
+  for(let i=0;i<16;i++)syncPlot(i);
+  syncAnimals();
+  const now=Date.now();
+  S.animals.forEach((a,i)=>{const d=ANI[a.k];
+    const t=!a.t?"🍽 餵食":now>=a.t+d.time*1000?"✨ 收取":Math.ceil((a.t+d.time*1000-now)/1000)+"秒";AV[i].lab.set(t)});
+  const m=S.mill;
+  millLab.set(m.r<0?"🏭 工坊":now>=m.t+REC[m.r].time*1000?"✨ 收取 "+REC[m.r].icon:REC[m.r].icon+" "+Math.ceil((m.t+REC[m.r].time*1000-now)/1000)+"秒");
+  scare.visible=S.scare;
+}
+
+/* ================= 介面 ================= */
 function draw(){
   $("coin").textContent=S.coin;
   const l=level(),lo=(l-1)*(l-1)*20,hi=l*l*20;
-  $("lv").textContent=l;$("barin").style.width=((S.xp-lo)/(hi-lo)*100)+"%";
-  $("seeds").innerHTML=CROPS.map((c,i)=>`<div class="chip ${S.sel==i?"sel":""} ${l<c.lv?"lock":""}" onpointerdown="selSeed(${i})"><b>${c.icon}</b>${l<c.lv?"🔒Lv"+c.lv:"種子×"+(S.seeds[i]||0)}</div>`).join("");
-  const now=Date.now();
-  $("field").innerHTML=S.plots.map((p,i)=>{
-    if(!p.open){const cost=100*(S.plots.filter(x=>x.open).length-5);return `<div class="tile lockd" onpointerdown="tap(${i},event)"><div class="up"><span style="font-size:22px">🔒<br><small style="position:static;transform:none;display:block">${cost}💰</small></span></div></div>`}
-    if(p.c==null)return `<div class="tile" onpointerdown="tap(${i},event)"></div>`;
-    const c=CROPS[p.c],pr=prog(p),ripe=pr>=1;
-    const ic=ripe?c.icon:(pr<0.35?"🌱":"🌿");
-    const label=ripe?"可收成":(needWater(p)?"缺水":Math.ceil((1-pr)*c.time)+"秒");
-    return `<div class="tile ${p.wet?"wet":""} ${ripe?"ripe":""}" onpointerdown="tap(${i},event)"><div class="up"><span class="${ripe?"ripeA":""}" style="font-size:${ripe?40:28+pr*14}px">${ic}</span>${p.bug?'<i class="bug">🐛</i>':""}${needWater(p)?"<i>💧</i>":""}<small>${label}</small></div></div>`;
-  }).join("");
-  $("pen").innerHTML=S.animals.length?S.animals.map((a,i)=>{
-    const d=ANI[a.k],ready=a.t&&now>=a.t+d.time*1000;
-    const st=!a.t?"🍽 餵食":ready?"✨ 收取":Math.ceil((a.t+d.time*1000-now)/1000)+"秒";
-    return `<div class="an ${ready?"ready":""}" onpointerdown="tapAn(${i},event)">${d.icon}<small>${st}</small></div>`}).join(""):'<div style="font-size:13px;color:#fff">🐾 牧場還沒有動物,去牧場購買</div>';
-  const T=[["hand","✋","種植/收成"],["water","💧","澆水"],["bug","🐛","除蟲"],["fert","🧪","肥料×"+S.fert]];
-  const M=[["shop","🛒","商店"],["inv","🎒","倉庫"],["farm","🐔","牧場"],["order","📋","訂單"]];
-  $("tools").innerHTML=T.map(t=>`<div class="tb ${S.tool==t[0]?"on":""}" onpointerdown="setTool('${t[0]}')"><b>${t[1]}</b>${t[2]}</div>`).join("")+M.map(t=>`<div class="tb" onpointerdown="openM('${t[0]}')"><b>${t[1]}</b>${t[2]}</div>`).join("");
+  $("lv").textContent=l+"  (XP "+S.xp+"/"+hi+")";$("barin").style.width=((S.xp-lo)/(hi-lo)*100)+"%";
+  $("seeds").innerHTML=CROPS.map((c,i)=>`<div class="chip ${S.sel==i?"sel":""} ${l<c.lv?"lock":""}" onpointerdown="selSeed(${i})"><b>${c.icon}</b>${l<c.lv?"🔒Lv"+c.lv:"×"+(S.seeds[i]||0)}</div>`).join("");
+  const T=[["hand","✋","種植收成"],["water","💧","澆水"],["bug","🐛","除蟲"],["fert","🧪","肥料×"+S.fert]];
+  const Mn=[["shop","🛒","商店"],["inv","🎒","倉庫"],["farm","🐔","牧場"],["mill","🏭","工坊"],["order","📋","訂單"],["ach","🏆","成就"]];
+  $("tools").innerHTML=T.map(t=>`<div class="tb ${S.tool==t[0]?"on":""}" onpointerdown="setTool('${t[0]}')"><b>${t[1]}</b>${t[2]}</div>`).join("")
+   +Mn.map(t=>`<div class="tb" onpointerdown="openM('${t[0]}')"><b>${t[1]}</b>${t[2]}</div>`).join("");
+  syncAll();
   if(modal)drawModal();
 }
-function selSeed(i){if(level()<CROPS[i].lv)return msg("等級 "+CROPS[i].lv+" 解鎖");S.sel=i;S.tool="hand";save();draw()}
-function setTool(t){S.tool=t;draw()}
-
-/* 視窗 */
-function openM(m){modal=m;$("modal").classList.add("open");drawModal()}
-function closeM(){modal=null;$("modal").classList.remove("open")}
+window.selSeed=i=>{if(level()<CROPS[i].lv)return msg("等級 "+CROPS[i].lv+" 解鎖");S.sel=i;S.tool="hand";save();draw()};
+window.setTool=t=>{S.tool=t;draw()};
+window.openM=m=>{modal=m;$("modal").classList.add("open");drawModal()};
+window.closeM=()=>{modal=null;$("modal").classList.remove("open")};
+const close=`<button class="r" onpointerdown="closeM()">關閉</button>`;
 function drawModal(){
   const l=level();let h="";
   if(modal=="shop"){
-    h=`<h3>🛒 商店 <button class="r" onpointerdown="closeM()">關閉</button></h3>`;
-    h+=`<div class="row"><div class="ic">🧪</div><div class="tx"><b>肥料</b><br>讓作物縮短 30% 時間</div><button onpointerdown="buy('fert',0,20)">買1 (20💰)</button></div>`;
-    h+=CROPS.map((c,i)=>`<div class="row"><div class="ic">${c.icon}</div><div class="tx"><b>${c.name}種子</b> 擁有 ${S.seeds[i]||0}<br>${c.time}秒成熟 · 賣${c.sell}💰 · ${l<c.lv?"🔒Lv"+c.lv:""}</div>
+    h=`<h3>🛒 商店 ${close}</h3>`;
+    h+=`<div class="row"><div class="ic">🧪</div><div class="tx"><b>肥料</b> 擁有 ${S.fert}<br>縮短 30% 時間</div><button onpointerdown="buy('fert',0,20)">20💰</button><button class="g" onpointerdown="buy('fert5',0,90)">×5</button></div>`;
+    h+=`<div class="row"><div class="ic">🧍</div><div class="tx"><b>稻草人</b> ${S.scare?"(已擁有)":""}<br>害蟲機率 30% → 10%</div><button ${S.scare?"disabled":""} onpointerdown="buy('scare',0,300)">300💰</button></div>`;
+    h+=CROPS.map((c,i)=>`<div class="row"><div class="ic">${c.icon}</div><div class="tx"><b>${c.name}種子</b> 擁有 ${S.seeds[i]||0}<br>${c.time}秒成熟 · 賣${c.sell}💰 ${l<c.lv?"· 🔒Lv"+c.lv:""}</div>
     <button ${l<c.lv?"disabled":""} onpointerdown="buy('seed',${i},${c.cost})">${c.cost}💰</button>
     <button class="g" ${l<c.lv?"disabled":""} onpointerdown="buy('seed5',${i},${c.cost*5})">×5</button></div>`).join("");
   }else if(modal=="inv"){
     const ks=Object.keys(S.inv).filter(k=>S.inv[k]>0);
-    h=`<h3>🎒 倉庫 <button class="r" onpointerdown="closeM()">關閉</button></h3>`;
+    h=`<h3>🎒 倉庫 ${close}</h3>`;
     h+=ks.length?ks.map(k=>{const it=item(k);return `<div class="row"><div class="ic">${it.icon}</div><div class="tx"><b>${it.name}</b> ×${S.inv[k]}<br>單價 ${it.sell}💰</div><button onpointerdown="sell('${k}',1)">賣1</button><button class="g" onpointerdown="sell('${k}',${S.inv[k]})">全賣</button></div>`}).join("")
-      +`<button style="width:100%;padding:10px" onpointerdown="sellAll()">💰 全部賣出</button>`:"<p>倉庫是空的,先去收成吧!</p>";
+     +`<button style="width:100%;padding:10px" onpointerdown="sellAll()">💰 全部賣出</button>`:"<p>倉庫是空的,先去收成吧!</p>";
   }else if(modal=="farm"){
-    h=`<h3>🐔 牧場 (${S.animals.length}/6) <button class="r" onpointerdown="closeM()">關閉</button></h3>`;
-    h+=ANI.map((a,i)=>`<div class="row"><div class="ic">${a.icon}</div><div class="tx"><b>${a.name}</b><br>餵食${a.feed}💰 → ${a.time}秒產${a.prod}${a.pname}(${a.sell}💰) ${l<a.lv?"🔒Lv"+a.lv:""}</div><button ${l<a.lv?"disabled":""} onpointerdown="buyAn(${i})">${a.cost}💰</button></div>`).join("");
+    h=`<h3>🐔 牧場 (${S.animals.length}/6) ${close}</h3>`;
+    h+=ANI.map((a,i)=>`<div class="row"><div class="ic">${a.icon}</div><div class="tx"><b>${a.name}</b><br>餵食${a.feed}💰 → ${a.time}秒產${a.prod}${a.pname}(${a.sell}💰) ${l<a.lv?"· 🔒Lv"+a.lv:""}</div><button ${l<a.lv?"disabled":""} onpointerdown="buyAn(${i})">${a.cost}💰</button></div>`).join("");
+    h+="<p style='font-size:12px'>買了之後,動物會出現在農場前方的牧場,點牠們餵食和收取。</p>";
+  }else if(modal=="mill"){
+    const m=S.mill;
+    h=`<h3>🏭 加工工坊 ${close}</h3>`;
+    if(m.r>=0){const r=REC[m.r],left=Math.ceil((m.t+r.time*1000-Date.now())/1000);
+      h+=`<div class="row"><div class="ic">${r.icon}</div><div class="tx"><b>製作中:${r.name}</b><br>${left>0?"還要 "+left+" 秒":"完成了!點場景中的工坊收取"}</div></div>`}
+    h+=REC.map((r,i)=>{
+      const need=Object.keys(r.need).map(k=>{const it=item(k);return `${it.icon}${(S.inv[k]||0)}/${r.need[k]}`}).join(" ");
+      const ok=Object.keys(r.need).every(k=>(S.inv[k]||0)>=r.need[k])&&l>=r.lv&&m.r<0;
+      return `<div class="row"><div class="ic">${r.icon}</div><div class="tx"><b>${r.name}</b> 賣${r.sell}💰<br>材料:${need}<br>${r.time}秒 ${l<r.lv?"· 🔒Lv"+r.lv:""}</div><button ${ok?"":"disabled"} onpointerdown="craft(${i})">製作</button></div>`}).join("");
   }else if(modal=="order"){
     fillOrders();
-    h=`<h3>📋 訂單 <button class="r" onpointerdown="closeM()">關閉</button></h3>`;
+    h=`<h3>📋 訂單 ${close}</h3>`;
     h+=S.orders.map((o,i)=>{const it=item(o.id),have=S.inv[o.id]||0;
       return `<div class="row"><div class="ic">${it.icon}</div><div class="tx"><b>交付 ${it.name} ×${o.n}</b> (${have}/${o.n})<br>獎勵 ${o.coin}💰 + ${o.xp}XP</div><button class="g" ${have<o.n?"disabled":""} onpointerdown="deliver(${i})">交貨</button></div>`}).join("");
+  }else if(modal=="ach"){
+    h=`<h3>🏆 成就 ${close}</h3>`;
+    h+=ACH.map(a=>{const v=Math.min(a.v(S.stats),a.goal),done=v>=a.goal,got=S.ach[a.id];
+      return `<div class="row"><div class="ic">${got?"✅":"🏅"}</div><div class="tx"><b>${a.name}</b><br>${a.desc} (${v}/${a.goal})<br>獎勵 ${a.coin}💰</div><button class="g" ${done&&!got?"":"disabled"} onpointerdown="claim('${a.id}')">${got?"已領":"領取"}</button></div>`}).join("");
+    h+=`<button class="r" style="width:100%;margin-top:8px" onpointerdown="resetGame()">重置遊戲</button>`;
   }
-  $("sheet").innerHTML=h;
+  const sh=$("sheet"),st=sh.scrollTop;sh.innerHTML=h;sh.scrollTop=st;
 }
-function buy(t,i,cost){
+window.buy=(t,i,cost)=>{
   if(S.coin<cost)return msg("金幣不足");
+  if(t=="scare"&&S.scare)return;
   S.coin-=cost;
-  if(t=="fert")S.fert++;else if(t=="seed")S.seeds[i]=(S.seeds[i]||0)+1;else S.seeds[i]=(S.seeds[i]||0)+5;
-  save();draw();
-}
-function sell(k,n){const it=item(k);S.inv[k]-=n;S.coin+=it.sell*n;msg("賣出 +"+it.sell*n+"💰");save();draw()}
-function sellAll(){let g=0;for(const k in S.inv){g+=item(k).sell*S.inv[k];S.inv[k]=0}S.coin+=g;msg("全部賣出 +"+g+"💰");save();draw()}
-function buyAn(i){
+  if(t=="fert")S.fert++;else if(t=="fert5")S.fert+=5;else if(t=="scare")S.scare=true;
+  else if(t=="seed")S.seeds[i]=(S.seeds[i]||0)+1;else S.seeds[i]=(S.seeds[i]||0)+5;
+  beep(600);save();draw();
+};
+window.sell=(k,n)=>{const it=item(k);S.inv[k]-=n;S.coin+=it.sell*n;msg("賣出 +"+it.sell*n+"💰");beep(900);save();draw()};
+window.sellAll=()=>{let g=0;for(const k in S.inv){g+=item(k).sell*S.inv[k];S.inv[k]=0}S.coin+=g;msg("全部賣出 +"+g+"💰");beep(900);save();draw()};
+window.buyAn=i=>{
   if(S.animals.length>=6)return msg("牧場已滿");
   if(S.coin<ANI[i].cost)return msg("金幣不足");
-  S.coin-=ANI[i].cost;S.animals.push({k:i,t:0});save();draw();
-}
+  S.coin-=ANI[i].cost;S.animals.push({k:i,t:0});beep(600);save();draw();
+};
 function fillOrders(){
   const l=level();
   while(S.orders.length<3){
-    const pool=[];CROPS.forEach((c,i)=>{if(c.lv<=l)pool.push("c"+i)});
+    const pool=[];
+    CROPS.forEach((c,i)=>{if(c.lv<=l)pool.push("c"+i)});
     ANI.forEach((a,i)=>{if(a.lv<=l&&S.animals.some(x=>x.k==i))pool.push("a"+i)});
-    const id=pool[Math.floor(Math.random()*pool.length)],n=2+Math.floor(Math.random()*4);
+    REC.forEach((r,i)=>{if(r.lv<=l)pool.push("r"+i)});
+    const id=pool[Math.floor(Math.random()*pool.length)],n=id[0]=="r"?1+Math.floor(Math.random()*2):2+Math.floor(Math.random()*4);
     S.orders.push({id,n,coin:Math.round(item(id).sell*n*1.6),xp:n*3});
   }
 }
-function deliver(i){
+window.deliver=i=>{
   const o=S.orders[i];if((S.inv[o.id]||0)<o.n)return;
-  S.inv[o.id]-=o.n;S.coin+=o.coin;addXp(o.xp);S.orders.splice(i,1);msg("訂單完成 +"+o.coin+"💰");save();draw();
+  S.inv[o.id]-=o.n;S.coin+=o.coin;S.stats.orders++;addXp(o.xp);S.orders.splice(i,1);msg("訂單完成 +"+o.coin+"💰");beep(850);save();draw();
+};
+window.claim=id=>{
+  const a=ACH.find(x=>x.id===id);
+  if(!a||S.ach[id]||a.v(S.stats)<a.goal)return;
+  S.ach[id]=true;S.coin+=a.coin;msg("🏆 成就達成 +"+a.coin+"💰");beep(950,.2);save();draw();
+};
+window.resetGame=()=>{
+  if(confirm("確定要重置整個遊戲嗎?")){localStorage.removeItem(KEY);location.reload()}
+};
+
+/* ================= 視角控制 ================= */
+let yaw=.6,pitch=.95,zoom=1,baseDist=28;
+function resize(){
+  const w=innerWidth,h=Math.max(200,innerHeight-$("tools").offsetHeight);
+  canvas.style.height=h+"px";
+  renderer.setSize(w,h,false);
+  camera.aspect=w/h;
+  baseDist=clamp(20.6/camera.aspect,24,46);
+  camera.setViewOffset(w,h,0,-40,w,h);
+  camera.updateProjectionMatrix();
+}
+addEventListener("resize",resize);
+
+const ptrs=new Map();
+let down=null,pinch0=0;
+canvas.addEventListener("pointerdown",e=>{
+  canvas.setPointerCapture(e.pointerId);
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  down={x:e.clientX,y:e.clientY,t:Date.now(),moved:0};
+  if(ptrs.size==2){
+    const [a,b]=[...ptrs.values()];
+    pinch0=Math.hypot(a.x-b.x,a.y-b.y);
+    down.moved=99;
+  }
+});
+canvas.addEventListener("pointermove",e=>{
+  const p=ptrs.get(e.pointerId);if(!p)return;
+  const dx=e.clientX-p.x,dy=e.clientY-p.y;
+  p.x=e.clientX;p.y=e.clientY;
+  if(ptrs.size==2){
+    const [a,b]=[...ptrs.values()];
+    const d=Math.hypot(a.x-b.x,a.y-b.y);
+    if(pinch0)zoom=clamp(zoom*pinch0/d,.6,1.5);
+    pinch0=d;return;
+  }
+  if(down)down.moved+=Math.abs(dx)+Math.abs(dy);
+  yaw-=dx*.006;
+  pitch=clamp(pitch+dy*.004,.55,1.25);
+});
+canvas.addEventListener("pointerup",e=>{
+  ptrs.delete(e.pointerId);
+  if(down&&down.moved<10&&Date.now()-down.t<600&&ptrs.size==0)pick(e);
+  if(ptrs.size==0)down=null;
+  pinch0=0;
+});
+canvas.addEventListener("pointercancel",e=>{ptrs.delete(e.pointerId);down=null;pinch0=0});
+canvas.addEventListener("wheel",e=>{zoom=clamp(zoom*(1+e.deltaY*.001),.6,1.5)},{passive:true});
+
+/* ================= 點擊 3D 物件 ================= */
+const ray=new THREE.Raycaster(),v2=new THREE.Vector2();
+function pick(e){
+  const r=canvas.getBoundingClientRect();
+  v2.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height)*2+1);
+  ray.setFromCamera(v2,camera);
+  const hit=ray.intersectObjects(pickables,true)[0];
+  if(!hit)return;
+  let o=hit.object;
+  while(o&&!o.userData.kind)o=o.parent;
+  if(!o)return;
+  const u=o.userData;
+  if(u.kind=="plot")tap(u.i,e);
+  else if(u.kind=="animal")tapAn(u.i,e);
+  else if(u.kind=="mill")millTap(e);
 }
 
-/* 啟動 */
+/* ================= 下雨事件 ================= */
+setInterval(()=>{
+  if(raining<=0&&Math.random()<.25){
+    raining=10;
+    S.plots.forEach(p=>{if(p.open&&p.c!=null)waterPlot(p)});
+    msg("☔ 下雨了!作物自動澆水");
+    save();draw();
+  }
+},30000);
+
+/* ================= 動畫迴圈 ================= */
+const clock=new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=Math.min(clock.getDelta(),.1),t=clock.elapsedTime;
+
+  const d=baseDist*zoom;
+  camera.position.set(
+    Math.sin(yaw)*Math.cos(pitch)*d,
+    Math.sin(pitch)*d,
+    Math.cos(yaw)*Math.cos(pitch)*d
+  );
+  camera.lookAt(0,0,0);
+
+  clouds.forEach(c=>{
+    c.position.x+=c.userData.sp*dt;
+    if(c.position.x>70)c.position.x=-70;
+  });
+  blades.rotation.z+=dt*1.2;
+
+  PV.forEach((v,i)=>{
+    if(!v.model)return;
+    const p=S.plots[i];
+    if(v.stage==1&&p.c!=null){
+      const pr=prog(p);
+      v.model.scale.setScalar(.4+.6*clamp((pr-.3)/.7,0,1));
+    }else if(v.stage==2){
+      v.model.scale.setScalar(1);
+      v.model.position.y=Math.abs(Math.sin(t*3+i))*.1;
+      if(v.ring)v.ring.rotation.z+=dt*2;
+    }
+    if(v.bug){
+      v.bug.rotation.y=Math.sin(t*4)*.5;
+      v.bug.position.x=.55+Math.sin(t*2)*.1;
+    }
+  });
+
+  const now=Date.now();
+  S.animals.forEach((a,i)=>{
+    const av=AV[i];if(!av)return;
+    const dd=ANI[a.k];
+    const ready=a.t&&now>=a.t+dd.time*1000;
+    av.m.rotation.z=0;
+    if(!a.t){
+      av.m.rotation.z=Math.sin(t*8)*.05;
+      av.g.position.y=0;
+    }else if(ready){
+      av.g.position.y=Math.abs(Math.sin(t*6))*.3;
+    }else{
+      av.g.position.y=Math.abs(Math.sin(t*2+i))*.04;
+    }
+  });
+
+  for(let k=parts.length-1;k>=0;k--){
+    const q=parts[k];
+    q.v.y-=9*dt;
+    q.m.position.addScaledVector(q.v,dt);
+    q.life-=dt;
+    q.m.scale.setScalar(Math.max(.05,q.life));
+    if(q.life<=0){scene.remove(q.m);parts.splice(k,1)}
+  }
+
+  if(raining>0){
+    raining-=dt;
+    rain.visible=true;
+    const arr=rainG.attributes.position.array;
+    for(let k=0;k<500;k++){
+      arr[k*3+1]-=dt*20;
+      if(arr[k*3+1]<0)arr[k*3+1]=14;
+    }
+    rainG.attributes.position.needsUpdate=true;
+  }else rain.visible=false;
+
+  renderer.render(scene,camera);
+}
+
+/* ================= 啟動 ================= */
 const today=new Date().toDateString();
-if(S.daily!==today){S.daily=today;S.coin+=50;setTimeout(()=>msg("🎁 每日登入獎勵 +50💰"),500)}
-const h=new Date().getHours();
-if(h>=18||h<6){document.body.classList.add("night");$("sun").textContent="🌙"}
-save();draw();
+if(S.daily!==today){
+  S.daily=today;S.coin+=50;
+  setTimeout(()=>msg("🎁 每日登入獎勵 +50💰"),600);
+}
+applyTime();
+syncAnimals();
+draw();
+resize();
+animate();
 setInterval(draw,1000);
+save();
 </script>
 </body>
 </html>
