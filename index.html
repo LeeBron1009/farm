@@ -5,105 +5,270 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
 <title>我的開心農場</title>
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;font-family:sans-serif;background:#bde8a1;color:#333;user-select:none}
-header{background:#4caf50;color:#fff;padding:10px;display:flex;justify-content:space-between;font-size:18px;position:sticky;top:0}
-#farm{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;max-width:500px;margin:auto}
-.plot{aspect-ratio:1;background:#8d5b2e;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:40px;border:3px solid #6b4220;position:relative}
-.plot small{font-size:12px;color:#fff;position:absolute;bottom:4px}
-.plot.ripe{animation:b 0.8s infinite;border-color:gold}
-@keyframes b{50%{transform:scale(1.06)}}
-#shop{display:flex;gap:8px;padding:0 12px;max-width:500px;margin:auto;overflow-x:auto}
-.seed{flex:1;min-width:90px;background:#fff;border-radius:10px;padding:8px;text-align:center;border:3px solid transparent}
-.seed.sel{border-color:#ff9800}
-.tools{text-align:center;padding:12px}
-button{font-size:16px;padding:8px 14px;border:0;border-radius:8px;background:#ff9800;color:#fff;margin:4px}
-#msg{text-align:center;height:24px;font-weight:bold}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;font-family:"PingFang TC","Microsoft JhengHei",sans-serif}
+body{background:linear-gradient(#8fd3ff,#d8f3ff 45%,#a8e07a 45%,#6fbf4a);display:flex;flex-direction:column;max-width:520px;margin:auto;position:relative}
+body.night{background:linear-gradient(#10204a,#2a3f7a 45%,#3f7a3a 45%,#2c5a2a)}
+body.night::after{content:"";position:fixed;inset:0;background:rgba(0,0,40,.18);pointer-events:none}
+.cloud{position:absolute;font-size:46px;opacity:.9;animation:fly 40s linear infinite;pointer-events:none}
+@keyframes fly{from{left:-80px}to{left:105%}}
+.sun{position:absolute;right:16px;top:70px;font-size:40px;pointer-events:none}
+
+#top{display:flex;align-items:center;gap:8px;padding:8px 10px;background:linear-gradient(#5fcf5f,#3da63d);color:#fff;font-weight:bold;box-shadow:0 3px 6px rgba(0,0,0,.3);z-index:5}
+#top .av{font-size:28px;background:#fff;border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center}
+#lvbox{flex:1}
+#bar{height:10px;background:rgba(0,0,0,.3);border-radius:6px;overflow:hidden;margin-top:3px}
+#barin{height:100%;background:#ffd54f;width:0}
+.coin{background:rgba(0,0,0,.28);padding:4px 10px;border-radius:14px}
+
+#toast{position:absolute;top:62px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;padding:6px 14px;border-radius:16px;font-size:14px;z-index:20;opacity:0;transition:.3s;white-space:nowrap;pointer-events:none}
+#toast.show{opacity:1}
+
+#seeds{display:flex;gap:6px;padding:8px;overflow-x:auto;z-index:4}
+.chip{flex:0 0 auto;background:rgba(255,255,255,.85);border-radius:12px;padding:4px 8px;text-align:center;font-size:12px;border:3px solid transparent;min-width:56px}
+.chip b{font-size:24px;display:block}
+.chip.sel{border-color:#ff9800;background:#fff}
+.chip.lock{opacity:.45}
+
+#stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;min-height:0}
+#world{position:relative;width:300px;height:300px;transform:rotateX(58deg) rotateZ(45deg);transform-style:preserve-3d;margin-top:10px}
+#island{position:absolute;inset:0;background:#86d65a;border-radius:20px;
+ box-shadow:1px 1px #5aa338,2px 2px #5aa338,3px 3px #5aa338,4px 4px #5aa338,5px 5px #4f8f2f,6px 6px #4f8f2f,7px 7px #7a5230,8px 8px #7a5230,9px 9px #7a5230,10px 10px #6a4426,11px 11px #6a4426,12px 12px #6a4426,22px 26px 22px rgba(0,0,0,.3)}
+#field{position:absolute;left:16px;top:16px;display:grid;grid-template-columns:repeat(4,64px);gap:4px;transform:translateZ(2px);transform-style:preserve-3d}
+.tile{width:64px;height:64px;border-radius:8px;position:relative;transform-style:preserve-3d;
+ background:linear-gradient(135deg,#a9692f,#8a5424);
+ box-shadow:1px 1px #5d3716,2px 2px #5d3716,3px 3px #5d3716,4px 4px #4a2b10,5px 5px #4a2b10}
+.tile.wet{background:linear-gradient(135deg,#7a4a22,#5e3818)}
+.tile.lockd{background:#9bd873;box-shadow:1px 1px #6fb04c,2px 2px #6fb04c,3px 3px #6fb04c}
+.tile.ripe{outline:3px solid gold;outline-offset:-3px}
+.up{position:absolute;left:50%;top:50%;width:0;height:0;transform:rotateZ(-45deg) rotateX(-58deg)}
+.up span{position:absolute;display:block;transform:translate(-50%,-85%);font-size:36px;white-space:nowrap;text-align:center;line-height:1;filter:drop-shadow(0 3px 2px rgba(0,0,0,.35))}
+.up span.ripeA{animation:bob .9s ease-in-out infinite}
+@keyframes bob{50%{transform:translate(-50%,-100%) scale(1.1)}}
+.up small{position:absolute;transform:translate(-50%,20px);font-size:11px;background:rgba(0,0,0,.65);color:#fff;border-radius:8px;padding:1px 6px;white-space:nowrap}
+.up i{position:absolute;font-style:normal;font-size:20px;transform:translate(8px,-62px)}
+.up .bug{transform:translate(-30px,-58px)}
+
+#pen{display:flex;gap:6px;padding:6px 10px;margin-bottom:4px;min-height:64px;align-items:flex-end;flex-wrap:wrap;justify-content:center;background:rgba(139,94,52,.55);border-radius:14px;border:3px solid #7a5230;width:92%}
+.an{text-align:center;font-size:34px;position:relative;width:56px}
+.an small{display:block;font-size:11px;background:rgba(0,0,0,.6);color:#fff;border-radius:8px}
+.an.ready{animation:bob2 .8s infinite}
+@keyframes bob2{50%{transform:translateY(-6px)}}
+.deco{position:absolute;font-size:44px;pointer-events:none}
+
+#tools{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px;background:linear-gradient(#c68a4a,#8a5a2b);box-shadow:0 -3px 6px rgba(0,0,0,.3);z-index:5}
+.tb{background:#fff3d6;border:3px solid #e0b36a;border-radius:12px;padding:4px 0;text-align:center;font-size:12px;color:#5a3a1c;font-weight:bold}
+.tb b{display:block;font-size:24px}
+.tb.on{background:#ffd54f;border-color:#ff9800;transform:translateY(-3px)}
+
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:30}
+#modal.open{display:flex}
+.sheet{background:#fff8e6;width:100%;max-width:520px;max-height:75vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:14px;animation:up .25s}
+@keyframes up{from{transform:translateY(100%)}}
+.sheet h3{margin:0 0 10px;display:flex;justify-content:space-between;align-items:center}
+.row{display:flex;align-items:center;gap:8px;background:#fff;border-radius:12px;padding:8px;margin-bottom:6px;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.row .ic{font-size:32px}.row .tx{flex:1;font-size:13px}
+button{font-size:14px;padding:6px 10px;border:0;border-radius:8px;background:#ff9800;color:#fff;font-weight:bold}
+button.g{background:#43a047}button.r{background:#e53935}button:disabled{background:#bbb}
+.pop{position:fixed;font-weight:bold;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;font-size:18px;pointer-events:none;animation:pp 1s forwards;z-index:40}
+@keyframes pp{to{transform:translateY(-60px);opacity:0}}
 </style>
 </head>
 <body>
-<header><span>💰 <b id="coin">0</b></span><span>⭐ 等級 <b id="lv">1</b></span><span>XP <b id="xp">0</b></span></header>
-<div id="msg">點選種子,再點土地種植!</div>
-<div id="shop"></div>
-<div id="farm"></div>
-<div class="tools">
-  <button onclick="buyPlot()">🟫 買新土地 (<span id="plotCost"></span>💰)</button>
-  <button onclick="harvestAll()">🧺 全部收成</button>
-  <button onclick="resetGame()" style="background:#e53935">重置</button>
+<div class="sun" id="sun">☀️</div>
+<div class="cloud" style="top:90px">☁️</div>
+<div class="cloud" style="top:150px;animation-duration:60s;animation-delay:-20s;font-size:34px">☁️</div>
+
+<div id="top">
+  <div class="av">🧑‍🌾</div>
+  <div id="lvbox">等級 <span id="lv">1</span><div id="bar"><div id="barin"></div></div></div>
+  <div class="coin">💰 <span id="coin">0</span></div>
 </div>
+<div id="toast"></div>
+<div id="seeds"></div>
+
+<div id="stage">
+  <span class="deco" style="left:4px;top:30px">🌳</span>
+  <span class="deco" style="right:6px;top:70px">🏡</span>
+  <span class="deco" style="left:0;bottom:90px;font-size:34px">🌻</span>
+  <div id="world"><div id="island"></div><div id="field"></div></div>
+  <div id="pen"></div>
+</div>
+
+<div id="tools"></div>
+<div id="modal" onpointerdown="if(event.target===this)closeM()"><div class="sheet" id="sheet"></div></div>
+
 <script>
 const CROPS=[
- {id:0,name:"蘿蔔",icon:"🥕",cost:5,sell:12,time:10,xp:2,lv:1},
- {id:1,name:"番茄",icon:"🍅",cost:15,sell:35,time:30,xp:5,lv:2},
- {id:2,name:"玉米",icon:"🌽",cost:30,sell:75,time:60,xp:10,lv:3},
- {id:3,name:"西瓜",icon:"🍉",cost:80,sell:210,time:120,xp:25,lv:5}
+ {name:"蘿蔔",icon:"🥕",cost:5,sell:12,time:15,xp:2,lv:1},
+ {name:"番茄",icon:"🍅",cost:15,sell:36,time:40,xp:5,lv:2},
+ {name:"玉米",icon:"🌽",cost:30,sell:80,time:90,xp:10,lv:3},
+ {name:"草莓",icon:"🍓",cost:50,sell:140,time:150,xp:15,lv:4},
+ {name:"西瓜",icon:"🍉",cost:80,sell:230,time:240,xp:25,lv:5},
+ {name:"南瓜",icon:"🎃",cost:150,sell:450,time:400,xp:40,lv:7}
 ];
-const KEY="happyFarmSave";
-let S=JSON.parse(localStorage.getItem(KEY)||"null")||{coin:30,xp:0,plots:Array(6).fill(null),sel:0};
+const ANI=[
+ {name:"小雞",icon:"🐔",prod:"🥚",pname:"雞蛋",cost:100,feed:10,time:40,sell:25,lv:1},
+ {name:"乳牛",icon:"🐄",prod:"🥛",pname:"牛奶",cost:500,feed:30,time:90,sell:70,lv:3},
+ {name:"綿羊",icon:"🐑",prod:"🧶",pname:"羊毛",cost:1200,feed:60,time:150,sell:150,lv:5}
+];
+function item(id){const n=+id.slice(1);if(id[0]=="c"){const c=CROPS[n];return{name:c.name,icon:c.icon,sell:c.sell}}const a=ANI[n];return{name:a.pname,icon:a.prod,sell:a.sell}}
+
+const KEY="happyFarm3D";
+const def=()=>({coin:50,xp:0,sel:0,tool:"hand",fert:2,seeds:{},inv:{},animals:[],orders:[],daily:"",
+ plots:Array.from({length:16},(_,i)=>({open:[5,6,7,9,10,11].includes(i)}))});
+let S=Object.assign(def(),JSON.parse(localStorage.getItem(KEY)||"{}"));
 const $=id=>document.getElementById(id);
-const level=()=>Math.floor(S.xp/50)+1;
-function save(){localStorage.setItem(KEY,JSON.stringify(S))}
-function msg(t){$("msg").textContent=t}
-function renderShop(){
-  $("shop").innerHTML=CROPS.map(c=>{
-    const lock=level()<c.lv;
-    return `<div class="seed ${S.sel==c.id?'sel':''}" onclick="selSeed(${c.id})" style="${lock?'opacity:.4':''}">
-    <div style="font-size:30px">${c.icon}</div>${c.name}<br>💰${c.cost}<br>⏱${c.time}秒${lock?'<br>🔒Lv'+c.lv:''}</div>`}).join("");
-}
-function selSeed(i){
-  if(level()<CROPS[i].lv){msg("等級不夠!");return}
-  S.sel=i;renderShop();save();
-}
-function render(){
-  const now=Date.now();
-  $("farm").innerHTML=S.plots.map((p,i)=>{
-    if(!p)return `<div class="plot" onclick="tap(${i})">🟫</div>`;
-    const c=CROPS[p.c],left=Math.ceil((p.t+c.time*1000-now)/1000);
-    if(left<=0)return `<div class="plot ripe" onclick="tap(${i})">${c.icon}<small>可收成!</small></div>`;
-    const stage=(now-p.t)/(c.time*1000)<0.5?"🌱":"🌿";
-    return `<div class="plot" onclick="tap(${i})">${stage}<small>${left}秒</small></div>`;
-  }).join("");
-  $("coin").textContent=S.coin;
-  $("xp").textContent=S.xp;
-  $("lv").textContent=level();
-  $("plotCost").textContent=plotCost();
-}
-function tap(i){
+const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
+const level=()=>{let l=1;while(S.xp>=l*l*20)l++;return l};
+let modal=null,tt;
+function msg(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>e.classList.remove("show"),1600)}
+function pop(t,e){const d=document.createElement("div");d.className="pop";d.textContent=t;d.style.left=((e&&e.clientX)||200)-20+"px";d.style.top=((e&&e.clientY)||300)-20+"px";document.body.appendChild(d);setTimeout(()=>d.remove(),1000)}
+function addXp(n){const b=level();S.xp+=n;if(level()>b)msg("🎉 升級了!等級 "+level())}
+
+/* 作物進度 */
+function prog(p){const c=CROPS[p.c],full=c.time*1000,half=full*0.4;let el=Date.now()-p.t;if(!p.wet&&el>half)el=half;return Math.min(1,el/full)}
+function needWater(p){const c=CROPS[p.c];return !p.wet&&Date.now()-p.t>=c.time*400}
+
+/* 點土地 */
+function tap(i,e){
   const p=S.plots[i];
-  if(!p){
-    const c=CROPS[S.sel];
-    if(S.coin<c.cost){msg("金幣不足!");return}
-    S.coin-=c.cost;S.plots[i]={c:c.id,t:Date.now()};
-    msg("種下了"+c.name);
-  }else{
-    const c=CROPS[p.c];
-    if(Date.now()<p.t+c.time*1000){msg("還沒成熟喔");return}
-    harvest(i);
+  if(!p.open){
+    const cost=100*(S.plots.filter(x=>x.open).length-5);
+    if(S.coin<cost)return msg("開墾需要 "+cost+"💰");
+    S.coin-=cost;p.open=true;msg("開墾成功!");
+  }else if(S.tool=="hand"){
+    if(p.c==null){
+      const c=CROPS[S.sel];
+      if(level()<c.lv)return msg("等級不夠");
+      if((S.seeds[S.sel]||0)>0)S.seeds[S.sel]--;
+      else if(S.coin>=c.cost)S.coin-=c.cost;
+      else return msg("金幣不足");
+      S.plots[i]={open:true,c:S.sel,t:Date.now(),wet:false,bug:Math.random()<0.3,fert:false};
+      pop("🌱",e);
+    }else{
+      const c=CROPS[p.c];
+      if(prog(p)<1){
+        if(needWater(p))return msg("💧 需要澆水才能繼續長大");
+        return msg(c.name+"還要 "+Math.ceil((1-prog(p))*c.time)+" 秒");
+      }
+      if(p.bug)return msg("🐛 先除蟲才能收成");
+      S.inv["c"+p.c]=(S.inv["c"+p.c]||0)+1;addXp(c.xp);
+      S.plots[i]={open:true};pop("+1"+c.icon+" +"+c.xp+"XP",e);
+    }
+  }else if(p.c!=null){
+    if(S.tool=="water"){if(p.wet)return msg("已經澆過水了");
+      const half=CROPS[p.c].time*400,stall=Math.max(0,Date.now()-(p.t+half));p.t+=stall;p.wet=true;pop("💧",e)}
+    else if(S.tool=="bug"){if(!p.bug)return msg("沒有蟲");p.bug=false;addXp(1);pop("✨除蟲 +1XP",e)}
+    else if(S.tool=="fert"){
+      if(prog(p)>=1)return msg("已經成熟了");
+      if(p.fert)return msg("已經施過肥");
+      if(S.fert<1)return msg("沒有肥料,去商店買");
+      S.fert--;p.fert=true;p.t-=CROPS[p.c].time*300;pop("🧪 加速!",e)}
   }
-  save();render();renderShop();
+  save();draw();
 }
-function harvest(i){
-  const c=CROPS[S.plots[i].c];
-  S.coin+=c.sell;S.xp+=c.xp;S.plots[i]=null;
-  msg(`收成${c.name} +${c.sell}💰`);
+
+/* 動物 */
+function tapAn(i,e){
+  const a=S.animals[i],d=ANI[a.k],now=Date.now();
+  if(!a.t){
+    if(S.coin<d.feed)return msg("飼料需要 "+d.feed+"💰");
+    S.coin-=d.feed;a.t=now;pop("🍽 餵食",e);
+  }else if(now>=a.t+d.time*1000){
+    S.inv["a"+a.k]=(S.inv["a"+a.k]||0)+1;a.t=0;addXp(3);pop("+1"+d.prod,e);
+  }else msg(d.name+"還要 "+Math.ceil((a.t+d.time*1000-now)/1000)+" 秒");
+  save();draw();
 }
-function harvestAll(){
-  let n=0;
-  S.plots.forEach((p,i)=>{if(p&&Date.now()>=p.t+CROPS[p.c].time*1000){harvest(i);n++}});
-  if(!n)msg("沒有可收成的作物");
-  save();render();renderShop();
+
+/* 畫面 */
+function draw(){
+  $("coin").textContent=S.coin;
+  const l=level(),lo=(l-1)*(l-1)*20,hi=l*l*20;
+  $("lv").textContent=l;$("barin").style.width=((S.xp-lo)/(hi-lo)*100)+"%";
+  $("seeds").innerHTML=CROPS.map((c,i)=>`<div class="chip ${S.sel==i?"sel":""} ${l<c.lv?"lock":""}" onpointerdown="selSeed(${i})"><b>${c.icon}</b>${l<c.lv?"🔒Lv"+c.lv:"種子×"+(S.seeds[i]||0)}</div>`).join("");
+  const now=Date.now();
+  $("field").innerHTML=S.plots.map((p,i)=>{
+    if(!p.open){const cost=100*(S.plots.filter(x=>x.open).length-5);return `<div class="tile lockd" onpointerdown="tap(${i},event)"><div class="up"><span style="font-size:22px">🔒<br><small style="position:static;transform:none;display:block">${cost}💰</small></span></div></div>`}
+    if(p.c==null)return `<div class="tile" onpointerdown="tap(${i},event)"></div>`;
+    const c=CROPS[p.c],pr=prog(p),ripe=pr>=1;
+    const ic=ripe?c.icon:(pr<0.35?"🌱":"🌿");
+    const label=ripe?"可收成":(needWater(p)?"缺水":Math.ceil((1-pr)*c.time)+"秒");
+    return `<div class="tile ${p.wet?"wet":""} ${ripe?"ripe":""}" onpointerdown="tap(${i},event)"><div class="up"><span class="${ripe?"ripeA":""}" style="font-size:${ripe?40:28+pr*14}px">${ic}</span>${p.bug?'<i class="bug">🐛</i>':""}${needWater(p)?"<i>💧</i>":""}<small>${label}</small></div></div>`;
+  }).join("");
+  $("pen").innerHTML=S.animals.length?S.animals.map((a,i)=>{
+    const d=ANI[a.k],ready=a.t&&now>=a.t+d.time*1000;
+    const st=!a.t?"🍽 餵食":ready?"✨ 收取":Math.ceil((a.t+d.time*1000-now)/1000)+"秒";
+    return `<div class="an ${ready?"ready":""}" onpointerdown="tapAn(${i},event)">${d.icon}<small>${st}</small></div>`}).join(""):'<div style="font-size:13px;color:#fff">🐾 牧場還沒有動物,去牧場購買</div>';
+  const T=[["hand","✋","種植/收成"],["water","💧","澆水"],["bug","🐛","除蟲"],["fert","🧪","肥料×"+S.fert]];
+  const M=[["shop","🛒","商店"],["inv","🎒","倉庫"],["farm","🐔","牧場"],["order","📋","訂單"]];
+  $("tools").innerHTML=T.map(t=>`<div class="tb ${S.tool==t[0]?"on":""}" onpointerdown="setTool('${t[0]}')"><b>${t[1]}</b>${t[2]}</div>`).join("")+M.map(t=>`<div class="tb" onpointerdown="openM('${t[0]}')"><b>${t[1]}</b>${t[2]}</div>`).join("");
+  if(modal)drawModal();
 }
-function plotCost(){return 100*(S.plots.length-5)}
-function buyPlot(){
-  if(S.plots.length>=18){msg("土地已達上限");return}
-  if(S.coin<plotCost()){msg("金幣不足!");return}
-  S.coin-=plotCost();S.plots.push(null);save();render();
+function selSeed(i){if(level()<CROPS[i].lv)return msg("等級 "+CROPS[i].lv+" 解鎖");S.sel=i;S.tool="hand";save();draw()}
+function setTool(t){S.tool=t;draw()}
+
+/* 視窗 */
+function openM(m){modal=m;$("modal").classList.add("open");drawModal()}
+function closeM(){modal=null;$("modal").classList.remove("open")}
+function drawModal(){
+  const l=level();let h="";
+  if(modal=="shop"){
+    h=`<h3>🛒 商店 <button class="r" onpointerdown="closeM()">關閉</button></h3>`;
+    h+=`<div class="row"><div class="ic">🧪</div><div class="tx"><b>肥料</b><br>讓作物縮短 30% 時間</div><button onpointerdown="buy('fert',0,20)">買1 (20💰)</button></div>`;
+    h+=CROPS.map((c,i)=>`<div class="row"><div class="ic">${c.icon}</div><div class="tx"><b>${c.name}種子</b> 擁有 ${S.seeds[i]||0}<br>${c.time}秒成熟 · 賣${c.sell}💰 · ${l<c.lv?"🔒Lv"+c.lv:""}</div>
+    <button ${l<c.lv?"disabled":""} onpointerdown="buy('seed',${i},${c.cost})">${c.cost}💰</button>
+    <button class="g" ${l<c.lv?"disabled":""} onpointerdown="buy('seed5',${i},${c.cost*5})">×5</button></div>`).join("");
+  }else if(modal=="inv"){
+    const ks=Object.keys(S.inv).filter(k=>S.inv[k]>0);
+    h=`<h3>🎒 倉庫 <button class="r" onpointerdown="closeM()">關閉</button></h3>`;
+    h+=ks.length?ks.map(k=>{const it=item(k);return `<div class="row"><div class="ic">${it.icon}</div><div class="tx"><b>${it.name}</b> ×${S.inv[k]}<br>單價 ${it.sell}💰</div><button onpointerdown="sell('${k}',1)">賣1</button><button class="g" onpointerdown="sell('${k}',${S.inv[k]})">全賣</button></div>`}).join("")
+      +`<button style="width:100%;padding:10px" onpointerdown="sellAll()">💰 全部賣出</button>`:"<p>倉庫是空的,先去收成吧!</p>";
+  }else if(modal=="farm"){
+    h=`<h3>🐔 牧場 (${S.animals.length}/6) <button class="r" onpointerdown="closeM()">關閉</button></h3>`;
+    h+=ANI.map((a,i)=>`<div class="row"><div class="ic">${a.icon}</div><div class="tx"><b>${a.name}</b><br>餵食${a.feed}💰 → ${a.time}秒產${a.prod}${a.pname}(${a.sell}💰) ${l<a.lv?"🔒Lv"+a.lv:""}</div><button ${l<a.lv?"disabled":""} onpointerdown="buyAn(${i})">${a.cost}💰</button></div>`).join("");
+  }else if(modal=="order"){
+    fillOrders();
+    h=`<h3>📋 訂單 <button class="r" onpointerdown="closeM()">關閉</button></h3>`;
+    h+=S.orders.map((o,i)=>{const it=item(o.id),have=S.inv[o.id]||0;
+      return `<div class="row"><div class="ic">${it.icon}</div><div class="tx"><b>交付 ${it.name} ×${o.n}</b> (${have}/${o.n})<br>獎勵 ${o.coin}💰 + ${o.xp}XP</div><button class="g" ${have<o.n?"disabled":""} onpointerdown="deliver(${i})">交貨</button></div>`}).join("");
+  }
+  $("sheet").innerHTML=h;
 }
-function resetGame(){
-  if(confirm("確定要重置嗎?")){localStorage.removeItem(KEY);location.reload()}
+function buy(t,i,cost){
+  if(S.coin<cost)return msg("金幣不足");
+  S.coin-=cost;
+  if(t=="fert")S.fert++;else if(t=="seed")S.seeds[i]=(S.seeds[i]||0)+1;else S.seeds[i]=(S.seeds[i]||0)+5;
+  save();draw();
 }
-renderShop();render();
-setInterval(render,1000);
+function sell(k,n){const it=item(k);S.inv[k]-=n;S.coin+=it.sell*n;msg("賣出 +"+it.sell*n+"💰");save();draw()}
+function sellAll(){let g=0;for(const k in S.inv){g+=item(k).sell*S.inv[k];S.inv[k]=0}S.coin+=g;msg("全部賣出 +"+g+"💰");save();draw()}
+function buyAn(i){
+  if(S.animals.length>=6)return msg("牧場已滿");
+  if(S.coin<ANI[i].cost)return msg("金幣不足");
+  S.coin-=ANI[i].cost;S.animals.push({k:i,t:0});save();draw();
+}
+function fillOrders(){
+  const l=level();
+  while(S.orders.length<3){
+    const pool=[];CROPS.forEach((c,i)=>{if(c.lv<=l)pool.push("c"+i)});
+    ANI.forEach((a,i)=>{if(a.lv<=l&&S.animals.some(x=>x.k==i))pool.push("a"+i)});
+    const id=pool[Math.floor(Math.random()*pool.length)],n=2+Math.floor(Math.random()*4);
+    S.orders.push({id,n,coin:Math.round(item(id).sell*n*1.6),xp:n*3});
+  }
+}
+function deliver(i){
+  const o=S.orders[i];if((S.inv[o.id]||0)<o.n)return;
+  S.inv[o.id]-=o.n;S.coin+=o.coin;addXp(o.xp);S.orders.splice(i,1);msg("訂單完成 +"+o.coin+"💰");save();draw();
+}
+
+/* 啟動 */
+const today=new Date().toDateString();
+if(S.daily!==today){S.daily=today;S.coin+=50;setTimeout(()=>msg("🎁 每日登入獎勵 +50💰"),500)}
+const h=new Date().getHours();
+if(h>=18||h<6){document.body.classList.add("night");$("sun").textContent="🌙"}
+save();draw();
+setInterval(draw,1000);
 </script>
 </body>
 </html>
