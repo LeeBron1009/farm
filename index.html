@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>我的開心農場</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:sans-serif;background:#bde8a1;color:#333;user-select:none}
+header{background:#4caf50;color:#fff;padding:10px;display:flex;justify-content:space-between;font-size:18px;position:sticky;top:0}
+#farm{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;max-width:500px;margin:auto}
+.plot{aspect-ratio:1;background:#8d5b2e;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:40px;border:3px solid #6b4220;position:relative}
+.plot small{font-size:12px;color:#fff;position:absolute;bottom:4px}
+.plot.ripe{animation:b 0.8s infinite;border-color:gold}
+@keyframes b{50%{transform:scale(1.06)}}
+#shop{display:flex;gap:8px;padding:0 12px;max-width:500px;margin:auto;overflow-x:auto}
+.seed{flex:1;min-width:90px;background:#fff;border-radius:10px;padding:8px;text-align:center;border:3px solid transparent}
+.seed.sel{border-color:#ff9800}
+.tools{text-align:center;padding:12px}
+button{font-size:16px;padding:8px 14px;border:0;border-radius:8px;background:#ff9800;color:#fff;margin:4px}
+#msg{text-align:center;height:24px;font-weight:bold}
+</style>
+</head>
+<body>
+<header><span>💰 <b id="coin">0</b></span><span>⭐ 等級 <b id="lv">1</b></span><span>XP <b id="xp">0</b></span></header>
+<div id="msg">點選種子,再點土地種植!</div>
+<div id="shop"></div>
+<div id="farm"></div>
+<div class="tools">
+  <button onclick="buyPlot()">🟫 買新土地 (<span id="plotCost"></span>💰)</button>
+  <button onclick="harvestAll()">🧺 全部收成</button>
+  <button onclick="resetGame()" style="background:#e53935">重置</button>
+</div>
+<script>
+const CROPS=[
+ {id:0,name:"蘿蔔",icon:"🥕",cost:5,sell:12,time:10,xp:2,lv:1},
+ {id:1,name:"番茄",icon:"🍅",cost:15,sell:35,time:30,xp:5,lv:2},
+ {id:2,name:"玉米",icon:"🌽",cost:30,sell:75,time:60,xp:10,lv:3},
+ {id:3,name:"西瓜",icon:"🍉",cost:80,sell:210,time:120,xp:25,lv:5}
+];
+const KEY="happyFarmSave";
+let S=JSON.parse(localStorage.getItem(KEY)||"null")||{coin:30,xp:0,plots:Array(6).fill(null),sel:0};
+const $=id=>document.getElementById(id);
+const level=()=>Math.floor(S.xp/50)+1;
+function save(){localStorage.setItem(KEY,JSON.stringify(S))}
+function msg(t){$("msg").textContent=t}
+function renderShop(){
+  $("shop").innerHTML=CROPS.map(c=>{
+    const lock=level()<c.lv;
+    return `<div class="seed ${S.sel==c.id?'sel':''}" onclick="selSeed(${c.id})" style="${lock?'opacity:.4':''}">
+    <div style="font-size:30px">${c.icon}</div>${c.name}<br>💰${c.cost}<br>⏱${c.time}秒${lock?'<br>🔒Lv'+c.lv:''}</div>`}).join("");
+}
+function selSeed(i){
+  if(level()<CROPS[i].lv){msg("等級不夠!");return}
+  S.sel=i;renderShop();save();
+}
+function render(){
+  const now=Date.now();
+  $("farm").innerHTML=S.plots.map((p,i)=>{
+    if(!p)return `<div class="plot" onclick="tap(${i})">🟫</div>`;
+    const c=CROPS[p.c],left=Math.ceil((p.t+c.time*1000-now)/1000);
+    if(left<=0)return `<div class="plot ripe" onclick="tap(${i})">${c.icon}<small>可收成!</small></div>`;
+    const stage=(now-p.t)/(c.time*1000)<0.5?"🌱":"🌿";
+    return `<div class="plot" onclick="tap(${i})">${stage}<small>${left}秒</small></div>`;
+  }).join("");
+  $("coin").textContent=S.coin;
+  $("xp").textContent=S.xp;
+  $("lv").textContent=level();
+  $("plotCost").textContent=plotCost();
+}
+function tap(i){
+  const p=S.plots[i];
+  if(!p){
+    const c=CROPS[S.sel];
+    if(S.coin<c.cost){msg("金幣不足!");return}
+    S.coin-=c.cost;S.plots[i]={c:c.id,t:Date.now()};
+    msg("種下了"+c.name);
+  }else{
+    const c=CROPS[p.c];
+    if(Date.now()<p.t+c.time*1000){msg("還沒成熟喔");return}
+    harvest(i);
+  }
+  save();render();renderShop();
+}
+function harvest(i){
+  const c=CROPS[S.plots[i].c];
+  S.coin+=c.sell;S.xp+=c.xp;S.plots[i]=null;
+  msg(`收成${c.name} +${c.sell}💰`);
+}
+function harvestAll(){
+  let n=0;
+  S.plots.forEach((p,i)=>{if(p&&Date.now()>=p.t+CROPS[p.c].time*1000){harvest(i);n++}});
+  if(!n)msg("沒有可收成的作物");
+  save();render();renderShop();
+}
+function plotCost(){return 100*(S.plots.length-5)}
+function buyPlot(){
+  if(S.plots.length>=18){msg("土地已達上限");return}
+  if(S.coin<plotCost()){msg("金幣不足!");return}
+  S.coin-=plotCost();S.plots.push(null);save();render();
+}
+function resetGame(){
+  if(confirm("確定要重置嗎?")){localStorage.removeItem(KEY);location.reload()}
+}
+renderShop();render();
+setInterval(render,1000);
+</script>
+</body>
+</html>
